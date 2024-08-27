@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<xacro:macro name="multi_robot_spawner" params="robot_count">
+    <xacro:property name="i" value="1"/>
+    <xacro:while value="${i <= robot_count}">
+        <group ns = "volta0${i}">
+            <arg name="initX" value="0"/>
+            <arg name="initY" value="${i*2}"/>
+            <arg name="initYaw" value="0"/> 
+            <param name="tf_prefix" value="volta0${i}"/>
+            <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+                <param name="tf_prefix" value="volta0${i}"/>
+            </node> 
+            <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+                <param name="tf_prefix" value="volta0${i}"/>
+            </node> 
+            
+            <arg name="model" default="$(find volta_description)/urdf/volta.xacro"/>
+            <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model) robot_namespace:=volta0${i}"/>
+
+            <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+            args="-urdf -model volta0${i} -param robot_description -x $(arg initX) -y $(arg initY) -z 0 -R 0 -P 0 -Y $(arg initYaw)">
+            </node>
+            
+            <node name="class" pkg="volta_simulation" type="class.py" args="volta0${i}" output="screen"/>
+
+            <include file="$(find volta_control)/launch/control.launch" />
+        </group>
+        <xacro:property name="i" value="${i+1}"/>
+    </xacro:while>
+</xacro:macro>
+        
+<launch>
+	<arg name="world" default="$(find volta_simulation)/worlds/optimised_empty_world.world"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <!-- <arg name="world_name" value="$(arg world)"/> -->
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+    
+    <arg name="robot_count" default="1"/>
+    <xacro:multi_robot_spawner robot_count="$(arg robot_count)"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find volta_simulation)/rviz/multiple_volta.rviz"/>
+
+</launch>

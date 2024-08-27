@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="world" default="$(find volta_simulation)/worlds/optimised_empty_world.world"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <!-- <arg name="world_name" value="$(arg world)"/> -->
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+    
+    <arg name="empty" default="true"/>
+    
+    <group ns = "volta01">
+	    <arg if="$(arg empty)" name="initX" value="0"/>
+	    <arg if="$(arg empty)" name="initY" value="0"/>
+	    <arg if="$(arg empty)" name="initYaw" value="0"/> 
+	    <param name="tf_prefix" value="volta01"/>
+	    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+	    	<param name="tf_prefix" value="volta01"/>
+	    </node> 
+	    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+	    	<param name="tf_prefix" value="volta01"/>
+	    </node> 
+	    
+	    <arg name="model" default="$(find volta_description)/urdf/volta.xacro"/>
+	    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model) robot_namespace:=volta01"/>
+
+	    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+		args="-urdf -model volta01 -param robot_description -x $(arg initX) -y $(arg initY) -z 0 -R 0 -P 0 -Y $(arg initYaw)">
+	    </node>
+	    
+		<node name="class" pkg="volta_simulation" type="class.py" args="volta01" output="screen"/>
+
+	    <include file="$(find volta_control)/launch/control.launch" />
+    </group>
+    
+    <group ns = "volta02">
+	    <arg if="$(arg empty)" name="initX" value="0"/>
+	    <arg if="$(arg empty)" name="initY" value="3"/>
+	    <arg if="$(arg empty)" name="initYaw" value="0"/> 
+	    <param name="tf_prefix" value="volta02"/>
+	    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+	    	<param name="tf_prefix" value="volta02"/>
+	    </node> 
+	    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+	    	<param name="tf_prefix" value="volta02"/>
+	    </node> 
+	    
+	    <arg name="model" default="$(find volta_description)/urdf/volta.xacro"/>
+	    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model) robot_namespace:=volta02"/>
+
+	    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+		args="-urdf -model volta02 -param robot_description -x $(arg initX) -y $(arg initY) -z 0 -R 0 -P 0 -Y $(arg initYaw)">
+	    </node>
+
+	    <node name="class" pkg="volta_simulation" type="class.py" args="volta02" output="screen"/>
+	    
+		<include file="$(find volta_control)/launch/control.launch" />
+    </group>
+
+	<!-- <group ns = "volta03">
+	    <arg if="$(arg empty)" name="initX" value="3"/>
+	    <arg if="$(arg empty)" name="initY" value="3"/>
+	    <arg if="$(arg empty)" name="initYaw" value="0"/> 
+	    <param name="tf_prefix" value="volta03"/>
+	    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+	    	<param name="tf_prefix" value="volta03"/>
+	    </node> 
+	    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+	    	<param name="tf_prefix" value="volta03"/>
+	    </node> 
+	    
+	    <arg name="model" default="$(find volta_description)/urdf/volta.xacro"/>
+	    <param name="robot_description" command="$(find xacro)/xacro -inorder $(arg model)"/>
+
+	    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+		args="-urdf -model volta03 -param robot_description -x $(arg initX) -y $(arg initY) -z 0 -R 0 -P 0 -Y $(arg initYaw)">
+	    </node>
+
+	    <node name="apf_planner" pkg="volta_simulation" type="class.py" args="volta03" output="screen"/>
+	    
+		<include file="$(find volta_control)/launch/control.launch" />
+    </group> -->
+
+	<!-- <group ns = "volta04">
+	    <arg if="$(arg empty)" name="initX" value="3"/>
+	    <arg if="$(arg empty)" name="initY" value="0"/>
+	    <arg if="$(arg empty)" name="initYaw" value="0"/> 
+	    <param name="tf_prefix" value="volta04"/>
+	    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+	    	<param name="tf_prefix" value="volta04"/>
+	    </node> 
+	    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+	    	<param name="tf_prefix" value="volta04"/>
+	    </node> 
+	    
+	    <arg name="model" default="$(find volta_description)/urdf/volta.xacro"/>
+	    <param name="robot_description" command="$(find xacro)/xacro -inorder $(arg model)"/>
+
+	    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+		args="-urdf -model volta04 -param robot_description -x $(arg initX) -y $(arg initY) -z 0 -R 0 -P 0 -Y $(arg initYaw)">
+	    </node>
+
+	    <node name="apf_planner" pkg="volta_simulation" type="class.py" args="volta04"/>
+	    
+		<include file="$(find volta_control)/launch/control.launch" />
+    </group> -->
+
+     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find volta_simulation)/rviz/multiple_volta.rviz"/>
+
+    
+
+    <!-- <include file="$(find volta_localization)/launch/localization.launch" /> -->
+
+</launch>
